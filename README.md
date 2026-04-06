@@ -270,3 +270,10 @@ python -m pytest -q
 ```
 
 Current implementation includes phases P0 through P10 with test coverage across planner, search, fetch/extract, summarization, persistence, reporting, delivery, run lifecycle, and tracing/alerts.
+
+
+## Next Steps
+- Format Gmail structure and make it look nicer
+- Update the flow to conduct more research for deep and standard types
+- Add a clean frontend UI
+- Deploy to cloud
