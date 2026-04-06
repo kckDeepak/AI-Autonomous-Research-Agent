@@ -1,0 +1,103 @@
+Metadata-Version: 2.4
+Name: autonomous-research-agent
+Version: 0.1.0
+Summary: Autonomous research pipeline with MCP integrations and OpenAI-first LLM abstraction.
+Author: Autonomous Research Team
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: beautifulsoup4>=4.12.3
+Requires-Dist: email-validator>=2.2.0
+Requires-Dist: fastapi>=0.116.0
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: loguru>=0.7.2
+Requires-Dist: mcp>=1.12.0
+Requires-Dist: openai>=1.109.0
+Requires-Dist: pydantic>=2.11.0
+Requires-Dist: pydantic-settings>=2.8.0
+Requires-Dist: python-dotenv>=1.1.0
+Requires-Dist: tenacity>=9.1.2
+Requires-Dist: uvicorn[standard]>=0.35.0
+Provides-Extra: dev
+Requires-Dist: mypy>=1.15.0; extra == "dev"
+Requires-Dist: pytest>=8.3.5; extra == "dev"
+Requires-Dist: pytest-asyncio>=1.1.0; extra == "dev"
+Requires-Dist: ruff>=0.11.6; extra == "dev"
+
+# Autonomous Research Agent
+
+Autonomous research pipeline that accepts a topic and produces a structured report with citations.
+
+This repository currently implements Phases P0-P10:
+
+- P0: Discovery and technical design artifacts
+- P1: Python project bootstrap and environment setup
+- P2: LLM provider abstraction with OpenAI-first implementation and Anthropic compatibility stub
+- P3: Planner prompt/schema, heuristics/caps, and persisted plan artifacts
+- P4: Tavily search wrapper, URL dedupe/ranking, and candidate artifact persistence
+- P5: Async fetch, HTML extraction/chunking, summarization, and relevance filtering
+- P6: Notion persistence with idempotency, retry handling, and dead-letter artifacts
+- P7: Citation-aware report composition with markdown and HTML rendering
+- P8: Gmail delivery with token refresh, retry handling, and idempotent send keys
+- P9: Unified CLI/API/web trigger interface with run status tracking
+- P10: Runtime guardrails, run tracing artifacts, and failure alert hooks
+
+## Quick Start
+
+1. Create and activate a Python 3.11+ environment.
+2. Install dependencies.
+
+```bash
+pip install -e .[dev]
+```
+
+3. Copy the environment template and provide secrets.
+
+```bash
+cp .env.example .env
+```
+
+4. Start the API.
+
+```bash
+python -m app.main
+```
+
+The API serves:
+
+- `GET /health`
+- `POST /v1/research` (P9 unified run trigger)
+- `GET /v1/research/runs/{run_id}` (P9 run status)
+- `GET /v1/research/form` (P9 minimal web form)
+- `POST /v1/research/plan` (P2-ready planner flow using the unified LLM interface)
+- `POST /v1/research/candidates` (P4 plan + candidate URL collection)
+- `POST /v1/research/findings` (P5 adds fetch/extract/summarize + filtered findings)
+- `POST /v1/research/persist-findings` (P6 writes findings to Notion + dead-letter logging)
+- `POST /v1/research/report` (P7 composes citation-grounded report markdown + HTML)
+- `POST /v1/research/deliver` (P8 sends report via Gmail and records delivery artifacts)
+
+P10 runtime controls and observability additions:
+
+- Hard guardrails for request size, source/query caps, and run token budget
+- Per-run trace artifact at `run_artifacts/<run_id>/run_trace.json`
+- Trace/alert log streams at `logs/run_traces.jsonl` and `logs/alerts.jsonl`
+- Repeated-failure and delivery-failure alert hooks (optional Slack emission)
+
+## CLI Full-Run Command
+
+```bash
+python -m app.cli --query "State of enterprise RAG adoption" --email "analyst@company.com" --depth standard
+```
+
+## Phase Deliverables
+
+- P0 docs: `docs/p0/`
+- P1 bootstrap: `pyproject.toml`, `.env.example`, `app/settings.py`, app scaffold
+- P2 abstraction: `app/providers/llm/` and planner/report modules
+- P3 planner: `app/modules/planner/`, `app/utils/artifacts.py`, `docs/p3/`
+- P4 search: `app/providers/mcp/tavily_search.py`, `app/modules/search/`, `docs/p4/`
+- P5 processing: `app/modules/fetcher/`, `app/modules/summarizer/`, `docs/p5/`
+- P6 persistence: `app/providers/mcp/notion.py`, `app/modules/notion/`, `docs/p6/`
+- P7 reporting: `app/modules/reporting/`, `app/schemas/report.py`, `docs/p7/`
+- P8 delivery: `app/providers/mcp/gmail.py`, `app/modules/delivery/`, `docs/p8/`
+- P9 interfaces: `app/core/run_service.py`, `app/core/run_store.py`, `docs/p9/`
+- P10 guardrails and observability: `app/core/guardrails.py`, `app/core/tracing.py`, `app/core/alerts.py`, `docs/p10/`
